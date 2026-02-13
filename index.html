@@ -22,7 +22,13 @@
 
         <div class="ticket-input">
             <label for="jiraTicket">Jira Ticket:</label>
-            <input type="text" id="jiraTicket" placeholder="e.g., PROJ-123">
+            <div class="ticket-controls">
+                <input type="text" id="jiraTicket" placeholder="e.g., PROJ-123">
+                <button id="startVotingBtn">Start Voting</button>
+            </div>
+            <div id="activeTicket" style="display: none;">
+                Currently voting on: <strong id="activeTicketNumber"></strong>
+            </div>
         </div>
 
         <div class="voting-section">
@@ -49,8 +55,8 @@
         </div>
 
         <div class="controls">
-            <button id="revealBtn" class="btn-primary">Reveal Cards</button>
-            <button id="resetBtn" class="btn-secondary">Reset</button>
+            <button id="revealBtn" class="btn-primary">Stop & Reveal</button>
+            <button id="resetBtn" class="btn-secondary">Reset Votes</button>
         </div>
 
         <div class="results" id="results" style="display: none;">
@@ -60,6 +66,14 @@
                 <p><strong>Average:</strong> <span id="average">-</span></p>
                 <p><strong>Suggested:</strong> <span id="suggested">-</span></p>
             </div>
+        </div>
+
+        <div class="history-section" id="historySection" style="display: none;">
+            <div class="history-header">
+                <h2>Voting History</h2>
+                <button id="clearHistoryBtn" class="btn-secondary btn-small">Clear History</button>
+            </div>
+            <div id="historyList"></div>
         </div>
     </div>
 
