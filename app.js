@@ -196,9 +196,14 @@ class PointPoker {
             suggested = this.suggestPoints(average);
         }
 
+        // Create deep copies of player data to avoid reference issues
+        const playersCopy = Array.from(this.players.values())
+            .filter(p => p.vote)
+            .map(p => ({ name: p.name, vote: p.vote }));
+
         const historyItem = {
             ticketNumber: this.activeTicket,
-            players: Array.from(this.players.values()).filter(p => p.vote),
+            players: playersCopy,
             average: average,
             suggested: suggested,
             timestamp: new Date().toISOString(),
