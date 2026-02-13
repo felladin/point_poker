@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Point Poker - Story Points Estimator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🃏</text></svg>">
+    
+    <!-- Social Media Preview -->
+    <meta property="og:title" content="Point Poker - Story Points Estimator">
+    <meta property="og:description" content="Collaborative planning poker app for agile teams">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🃏 Point Poker</h1>
+            <p>Collaborative Story Point Estimation</p>
+        </header>
+
+        <div class="ticket-input">
+            <label for="jiraTicket">Jira Ticket:</label>
+            <input type="text" id="jiraTicket" placeholder="e.g., PROJ-123">
+        </div>
+
+        <div class="voting-section">
+            <h2>Select Your Estimate</h2>
+            <div class="cards">
+                <button class="card" data-value="1">1</button>
+                <button class="card" data-value="2">2</button>
+                <button class="card" data-value="3">3</button>
+                <button class="card" data-value="5">5</button>
+                <button class="card" data-value="8">8</button>
+                <button class="card" data-value="13">13</button>
+                <button class="card" data-value="21">21</button>
+                <button class="card" data-value="?">?</button>
+            </div>
+        </div>
+
+        <div class="players-section">
+            <h2>Players</h2>
+            <div id="playersList"></div>
+            <div class="player-controls">
+                <input type="text" id="playerName" placeholder="Your name">
+                <button id="joinBtn">Join Session</button>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="revealBtn" class="btn-primary">Reveal Cards</button>
+            <button id="resetBtn" class="btn-secondary">Reset</button>
+        </div>
+
+        <div class="results" id="results" style="display: none;">
+            <h2>Results</h2>
+            <div id="resultsContent"></div>
+            <div class="stats">
+                <p><strong>Average:</strong> <span id="average">-</span></p>
+                <p><strong>Suggested:</strong> <span id="suggested">-</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
