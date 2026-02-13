@@ -423,23 +423,13 @@ class PointPoker {
     }
 
     reset() {
-        if (!this.activeTicket) {
-            // No active ticket, full reset
-            this.revealed = false;
-            this.players.forEach((player, name) => {
-                player.vote = null;
-                this.players.set(name, player);
-            });
-            document.getElementById('results').style.display = 'none';
-        } else {
-            // Active ticket, only reset votes
-            this.revealed = false;
-            this.players.forEach((player, name) => {
-                player.vote = null;
-                this.players.set(name, player);
-            });
-            document.getElementById('results').style.display = 'none';
-        }
+        // Reset votes for active ticket
+        this.revealed = false;
+        this.players.forEach((player, name) => {
+            player.vote = null;
+            this.players.set(name, player);
+        });
+        document.getElementById('results').style.display = 'none';
 
         document.querySelectorAll('.card').forEach(card => {
             card.classList.remove('selected');

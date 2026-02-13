@@ -155,6 +155,8 @@ header p {
     opacity: 0.5;
     cursor: not-allowed;
     background: #F4F5F7;
+    color: #A5ADBA;
+    border-color: #DFE1E6;
 }
 
 .card.selected {
@@ -247,8 +249,10 @@ header p {
 }
 
 .controls button:disabled {
-    opacity: 0.5;
+    opacity: 0.6;
     cursor: not-allowed;
+    background: #DFE1E6;
+    color: #7A869A;
 }
 
 .btn-primary {
