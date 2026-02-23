@@ -7,7 +7,8 @@ import {
     update,
     remove,
     get,
-    signInAnonymously
+    signInAnonymously,
+    onAuthStateChanged
 } from './firebase-config.js';
 import { serverTimestamp, onValue } from "firebase/database";
 
@@ -58,6 +59,20 @@ class PointPoker {
             console.warn('Firebase Realtime Database could not be initialized.');
             this.db = null;
         }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in (or was anonymously signed in)
+                this.playerId = user.uid;
+                localStorage.setItem('pointPokerPlayerId', this.playerId);
+                console.log("Auth state changed. Current Player ID:", this.playerId);
+            } else {
+                // User is signed out
+                this.playerId = this.getOrCreatePlayerId(); // Fallback to a local ID if needed, or handle sign-out
+                console.log("Auth state changed. User signed out. Fallback Player ID:", this.playerId);
+            }
+            // You might want to re-evaluate UI or session state here
+        });
     }
 
 
@@ -521,7 +536,20 @@ class PointPoker {
 
         if (this.currentPlayer) {
             if (this.isOnline && this.sessionRef) {
-                // Parse the value to an integer before sending it to Firebase
+                // IMPORTANT: Verify current auth state and player ID
+                console.log("Current auth.currentUser:", auth.currentUser);
+                console.log("Auth UID:", auth.currentUser ? auth.currentUser.uid : 'Not authenticated');
+                console.log("Player ID for update path (this.playerId):", this.playerId);
+                console.log("Session Code for update path (this.sessionCode):", this.sessionCode);
+
+                if (!auth.currentUser || auth.currentUser.uid !== this.playerId) {
+                    console.warn("Authentication state mismatch or not authenticated. Attempting to re-authenticate anonymously.");
+                    // You might want to re-authenticate here or prompt the user.
+                    // For now, let's just alert, but a robust solution would re-sign-in.
+                    alert("Your session has expired or changed. Please rejoin the session.");
+                    return;
+                }
+
                 const numericValue = parseInt(value, 10);
                 if (isNaN(numericValue)) {
                     console.error("Invalid vote value, not a number:", value);
@@ -530,7 +558,9 @@ class PointPoker {
                 }
                 update(ref(this.db, `sessions/${this.sessionCode}/players/${this.playerId}`), {
                     vote: numericValue // Send the numeric value
-                });
+                })
+                .then(() => console.log("Vote updated successfully!"))
+                .catch(error => console.error("Vote update failed:", error));
             } else {
                 const player = this.players.get(this.playerId);
                 if (player) {
