@@ -1,7 +1,4 @@
-// At the top of app.js, replace your current imports with:
 import {
-    app as firebaseApp,
-    analytics,
     db,
     auth,
     ref,
@@ -11,8 +8,8 @@ import {
     remove,
     get,
     signInAnonymously
-} from './firebase-config.js'; // Adjust path if needed
-import { serverTimestamp, onValue, off } from "firebase/database"; // Import serverTimestamp, onValue, off
+} from './firebase-config.js';
+import { serverTimestamp, onValue } from "firebase/database";
 
 class PointPoker {
     constructor() {
