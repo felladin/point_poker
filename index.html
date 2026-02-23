@@ -12,6 +12,11 @@
     <meta property="og:description" content="Collaborative planning poker app for agile teams">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
 </head>
 <body>
     <div class="container">
@@ -19,6 +24,28 @@
             <h1>🃏 Point Poker</h1>
             <p>Collaborative Story Point Estimation</p>
         </header>
+
+        <div class="session-section" id="sessionSection" style="display: none;">
+            <div id="sessionSetup">
+                <h2>Multiplayer Session</h2>
+                <div class="session-controls">
+                    <button id="createSessionBtn" class="btn-primary">Create New Session</button>
+                    <span class="session-divider">or</span>
+                    <div class="join-session-controls">
+                        <input type="text" id="sessionCodeInput" placeholder="Enter code" maxlength="6">
+                        <button id="joinSessionBtn" class="btn-primary">Join Session</button>
+                    </div>
+                </div>
+            </div>
+            <div id="sessionInfo" style="display: none;">
+                <div class="session-active">
+                    <span>Session: <strong id="sessionCodeDisplay"></strong></span>
+                    <span id="hostBadge" class="host-badge" style="display: none;">Host</span>
+                    <button id="copyLinkBtn" class="btn-small btn-secondary">📋 Copy Invite Link</button>
+                    <button id="leaveSessionBtn" class="btn-small btn-secondary">Leave</button>
+                </div>
+            </div>
+        </div>
 
         <div class="ticket-input">
             <label for="jiraTicket">Jira Ticket:</label>

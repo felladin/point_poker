@@ -47,6 +47,95 @@ header p {
     font-size: 1.1em;
 }
 
+.session-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #F4F5F7;
+    border-radius: 8px;
+    border: 2px solid var(--border-color);
+}
+
+.session-section h2 {
+    color: var(--secondary-color);
+    margin-bottom: 15px;
+    font-size: 1.3em;
+}
+
+.session-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.session-controls .btn-primary {
+    padding: 12px 24px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+    white-space: nowrap;
+}
+
+.session-controls .btn-primary:hover {
+    background: #0747a6;
+}
+
+.session-divider {
+    color: var(--secondary-color);
+    font-weight: 600;
+}
+
+.join-session-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.join-session-controls input {
+    padding: 12px;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1em;
+    width: 140px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-align: center;
+}
+
+.join-session-controls input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.session-active {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.session-active span {
+    font-size: 1.1em;
+}
+
+.session-active strong {
+    font-size: 1.3em;
+    color: var(--primary-color);
+    letter-spacing: 3px;
+}
+
+.host-badge {
+    background: var(--success-color);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 600;
+}
+
 .ticket-input {
     margin-bottom: 30px;
 }
@@ -391,5 +480,23 @@ header p {
         flex-direction: column;
         align-items: flex-start;
         gap: 10px;
+    }
+
+    .session-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .join-session-controls {
+        flex-direction: column;
+    }
+
+    .join-session-controls input {
+        width: 100%;
+    }
+
+    .session-active {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }
