@@ -20,7 +20,7 @@ class PointPoker {
     getOrCreatePlayerId() {
         let id = localStorage.getItem('pointPokerPlayerId');
         if (!id) {
-            id = 'p_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+            id = 'p_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 7);
             localStorage.setItem('pointPokerPlayerId', id);
         }
         return id;

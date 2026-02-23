@@ -18,6 +18,9 @@
 //      }
 //    }
 //
+//    For production use, consider adding Firebase Authentication and
+//    restricting writes to authenticated users only.
+//
 // Until Firebase is configured, the app works in local (single-player) mode.
 
 const firebaseConfig = {
