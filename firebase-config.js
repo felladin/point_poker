@@ -1,30 +1,10 @@
 // Firebase Configuration for Point Poker
-//
-// To enable multiplayer sessions, set up a Firebase project:
-// 1. Go to https://console.firebase.google.com/
-// 2. Create a new project (or use an existing one)
-// 3. Add a web app to your project
-// 4. Copy your firebaseConfig values into the object below
-// 5. Enable Realtime Database in your Firebase project
-// 6. Set the database rules to allow read/write access:
-//    {
-//      "rules": {
-//        "sessions": {
-//          "$sessionId": {
-//            ".read": true,
-//            ".write": true
-//          }
-//        }
-//      }
-//    }
-//
-//    For production use, consider adding Firebase Authentication and
-//    restricting writes to authenticated users only.
-//
-// Until Firebase is configured, the app works in local (single-player) mode.
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
+import { getDatabase, ref, set, onDisconnect, update, remove, get } from "firebase/database"; // Import Realtime Database functions
+import { getAuth, signInAnonymously } from "firebase/auth"; // Import Auth functions for anonymous sign-in
+
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -33,6 +13,8 @@ import { getAnalytics } from "firebase/analytics";
 const firebaseConfig = {
   apiKey: "AIzaSyA1ktyAjm-lvo9CsjcjGCOohrHZ_7PPjhI",
   authDomain: "point-poker-16821.firebaseapp.com",
+  // ADD THIS LINE
+  databaseURL: "https://point-poker-16821-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "point-poker-16821",
   storageBucket: "point-poker-16821.firebasestorage.app",
   messagingSenderId: "1085661060356",
@@ -43,5 +25,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
+const db = getDatabase(app); // Initialize Realtime Database
+const auth = getAuth(app); // Initialize Authentication
 
-const isFirebaseConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY";
+export { app, analytics, db, auth, ref, set, onDisconnect, update, remove, get, signInAnonymously }; // Export everything needed
