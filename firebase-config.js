@@ -13,7 +13,6 @@ import { getAuth, signInAnonymously } from "firebase/auth"; // Import Auth funct
 const firebaseConfig = {
   apiKey: "AIzaSyA1ktyAjm-lvo9CsjcjGCOohrHZ_7PPjhI",
   authDomain: "point-poker-16821.firebaseapp.com",
-  // ADD THIS LINE
   databaseURL: "https://point-poker-16821-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "point-poker-16821",
   storageBucket: "point-poker-16821.firebasestorage.app",
