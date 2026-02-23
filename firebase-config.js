@@ -22,15 +22,26 @@
 //    restricting writes to authenticated users only.
 //
 // Until Firebase is configured, the app works in local (single-player) mode.
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyA1ktyAjm-lvo9CsjcjGCOohrHZ_7PPjhI",
+  authDomain: "point-poker-16821.firebaseapp.com",
+  projectId: "point-poker-16821",
+  storageBucket: "point-poker-16821.firebasestorage.app",
+  messagingSenderId: "1085661060356",
+  appId: "1:1085661060356:web:7e7b6a832a3f236bef0451",
+  measurementId: "G-8JTCP05Y47"
 };
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
 const isFirebaseConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY";
