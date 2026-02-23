@@ -160,7 +160,7 @@ class PointPoker {
 
     // ---- Session Management ----
 
-    createSession() {
+       createSession() {
         if (!this.db) {
             alert('Firebase is not configured. See README for setup instructions.');
             return;
@@ -176,6 +176,14 @@ class PointPoker {
         this.isOnline = true;
 
         this.sessionRef = this.db.ref('sessions/' + code);
+
+        // Register onDisconnect to remove the session when the host disconnects
+        this.sessionRef.onDisconnect().remove().then(() => {
+            console.log('onDisconnect hook registered for session:', code);
+        }).catch((error) => {
+            console.error('Failed to register onDisconnect hook:', error);
+        });
+
         this.sessionRef.set({
             ticket: null,
             revealed: false,
