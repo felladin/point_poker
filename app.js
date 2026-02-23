@@ -1,3 +1,19 @@
+// At the top of app.js, replace your current imports with:
+import {
+    app as firebaseApp,
+    analytics,
+    db,
+    auth,
+    ref,
+    set,
+    onDisconnect,
+    update,
+    remove,
+    get,
+    signInAnonymously
+} from './firebase-config.js'; // Adjust path if needed
+import { serverTimestamp, onValue, off } from "firebase/database"; // Import serverTimestamp, onValue, off
+
 class PointPoker {
     constructor() {
         this.players = new Map();
@@ -13,6 +29,7 @@ class PointPoker {
         this.db = null;
         this.sessionRef = null;
         this.isOnline = false;
+        this.unsubscribeSession = null; // Store the listener unsubscribe function
 
         this.init();
     }
@@ -35,22 +52,17 @@ class PointPoker {
     }
 
     initFirebase() {
-        try {
-            if (typeof firebase !== 'undefined' &&
-                typeof firebaseConfig !== 'undefined' &&
-                typeof isFirebaseConfigured !== 'undefined' &&
-                isFirebaseConfigured) {
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(firebaseConfig);
-                }
-                this.db = firebase.database();
-                document.getElementById('sessionSection').style.display = 'block';
-            }
-        } catch (e) {
-            console.warn('Firebase initialization failed:', e);
+        // The `db` object is now imported directly from firebase-config.js
+        if (db) { // Check if db was successfully initialized
+            this.db = db; // Assign the imported db
+            document.getElementById('sessionSection').style.display = 'block';
+            console.log('Firebase Realtime Database initialized.');
+        } else {
+            console.warn('Firebase Realtime Database could not be initialized.');
             this.db = null;
         }
     }
+
 
     checkUrlForSession() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -160,7 +172,7 @@ class PointPoker {
 
     // ---- Session Management ----
 
-       createSession() {
+    async createSession() {
         if (!this.db) {
             alert('Firebase is not configured. See README for setup instructions.');
             return;
@@ -170,29 +182,46 @@ class PointPoker {
             return;
         }
 
+        // Authenticate anonymously first
+        let userCredential;
+        try {
+            userCredential = await signInAnonymously(auth);
+            this.playerId = userCredential.user.uid;
+            localStorage.setItem('pointPokerPlayerId', this.playerId);
+        } catch (error) {
+            console.error("Anonymous authentication failed:", error);
+            alert("Failed to authenticate with Firebase. Please try again.");
+            return;
+        }
+
         const code = this.generateSessionCode();
         this.sessionCode = code;
         this.isHost = true;
         this.isOnline = true;
 
-        this.sessionRef = this.db.ref('sessions/' + code);
+        this.sessionRef = ref(this.db, 'sessions/' + code);
 
-        // Register onDisconnect to remove the session when the host disconnects
-        this.sessionRef.onDisconnect().remove().then(() => {
-            console.log('onDisconnect hook registered for session:', code);
+        // Register onDisconnect with a 5-second grace period.
+        // Instead of removing the entire session immediately, mark it as
+        // "disconnected" with a timestamp. A separate check (or the host
+        // reconnecting) will cancel the pending removal.
+        const disconnectRef = ref(this.db, `sessions/${code}/hostDisconnectedAt`);
+        onDisconnect(disconnectRef).set(serverTimestamp()).then(() => {
+            console.log('onDisconnect grace-period hook registered for session:', code);
         }).catch((error) => {
             console.error('Failed to register onDisconnect hook:', error);
         });
 
-        this.sessionRef.set({
+        await set(this.sessionRef, {
             ticket: null,
             revealed: false,
             hostId: this.playerId,
-            createdAt: firebase.database.ServerValue.TIMESTAMP
+            hostDisconnectedAt: null,
+            createdAt: serverTimestamp()
         });
 
         // Add self as player
-        this.sessionRef.child('players/' + this.playerId).set({
+        await set(ref(this.db, `sessions/${code}/players/${this.playerId}`), {
             name: this.currentPlayer,
             vote: null
         });
@@ -206,13 +235,25 @@ class PointPoker {
         this.updateSessionUI();
     }
 
-    joinSessionByCode() {
+    async joinSessionByCode() {
         if (!this.db) {
             alert('Firebase is not configured. See README for setup instructions.');
             return;
         }
         if (!this.currentPlayer) {
             alert('Please enter your name and join first!');
+            return;
+        }
+
+        // Authenticate anonymously first
+        let userCredential;
+        try {
+            userCredential = await signInAnonymously(auth);
+            this.playerId = userCredential.user.uid;
+            localStorage.setItem('pointPokerPlayerId', this.playerId);
+        } catch (error) {
+            console.error("Anonymous authentication failed:", error);
+            alert("Failed to authenticate with Firebase. Please try again.");
             return;
         }
 
@@ -224,43 +265,97 @@ class PointPoker {
             return;
         }
 
-        this.db.ref('sessions/' + code).once('value').then((snapshot) => {
-            if (!snapshot.exists()) {
-                alert('Session not found. Please check the code and try again.');
-                return;
-            }
+        // Validate session code format (6 alphanumeric characters)
+        if (!/^[A-Z0-9]{6}$/.test(code)) {
+            alert('Invalid session code format. Please enter a 6-character code.');
+            return;
+        }
 
-            this.sessionCode = code;
-            this.sessionRef = this.db.ref('sessions/' + code);
-            this.isOnline = true;
+        const sessionSnapshot = await get(ref(this.db, 'sessions/' + code));
 
-            const sessionData = snapshot.val();
-            this.isHost = (sessionData.hostId === this.playerId);
+        if (!sessionSnapshot.exists()) {
+            alert('Session not found. Please check the code and try again.');
+            return;
+        }
 
-            // Add self as player
-            this.sessionRef.child('players/' + this.playerId).set({
-                name: this.currentPlayer,
-                vote: null
-            });
+        this.sessionCode = code;
+        this.sessionRef = ref(this.db, 'sessions/' + code);
+        this.isOnline = true;
 
-            // Update URL
-            const url = new URL(window.location.href);
-            url.searchParams.set('session', code);
-            window.history.replaceState({}, '', url);
+        const sessionData = sessionSnapshot.val();
+        this.isHost = (sessionData.hostId === this.playerId);
 
-            this.attachFirebaseListeners();
-            this.updateSessionUI();
+        // Add self as player
+        await set(ref(this.db, `sessions/${code}/players/${this.playerId}`), {
+            name: this.currentPlayer,
+            vote: null
         });
+
+        // Update URL
+        const url = new URL(window.location.href);
+        url.searchParams.set('session', code);
+        window.history.replaceState({}, '', url);
+
+        this.attachFirebaseListeners();
+        this.updateSessionUI();
     }
 
     attachFirebaseListeners() {
         if (!this.sessionRef) return;
 
-        this.sessionRef.on('value', (snapshot) => {
+        // Clean up any existing listener before attaching a new one
+        if (this.unsubscribeSession) {
+            this.unsubscribeSession();
+            this.unsubscribeSession = null;
+        }
+
+        // Use modular onValue listener; store the unsubscribe function for cleanup
+        this.unsubscribeSession = onValue(this.sessionRef, (snapshot) => {
             const data = snapshot.val();
             if (!data) {
                 this.leaveSession();
                 return;
+            }
+
+            // --- Grace period logic for host disconnection ---
+            if (data.hostDisconnectedAt) {
+                const disconnectedAt = data.hostDisconnectedAt;
+                const now = Date.now();
+                const elapsed = now - disconnectedAt;
+                const gracePeriod = 5000; // 5 seconds
+
+                if (this.isHost) {
+                    // Host has reconnected — cancel the grace period
+                    update(this.sessionRef, { hostDisconnectedAt: null });
+                    // Re-register the onDisconnect hook
+                    const disconnectRef = ref(this.db, `sessions/${this.sessionCode}/hostDisconnectedAt`);
+                    onDisconnect(disconnectRef).set(serverTimestamp());
+                } else {
+                    // Non-host: check if grace period has expired
+                    if (elapsed >= gracePeriod) {
+                        // Grace period expired — session is dead
+                        alert('The host has disconnected. The session has ended.');
+                        this.leaveSession();
+                        return;
+                    } else {
+                        // Wait for the remainder of the grace period, then re-check
+                        const remaining = gracePeriod - elapsed;
+                        clearTimeout(this._gracePeriodTimeout);
+                        this._gracePeriodTimeout = setTimeout(async () => {
+                            const freshSnapshot = await get(this.sessionRef);
+                            const freshData = freshSnapshot.val();
+                            if (freshData && freshData.hostDisconnectedAt) {
+                                // Still disconnected after grace period
+                                remove(this.sessionRef);
+                                alert('The host has disconnected. The session has ended.');
+                                this.leaveSession();
+                            }
+                        }, remaining);
+                    }
+                }
+            } else {
+                // Host is connected — clear any pending grace period timeout
+                clearTimeout(this._gracePeriodTimeout);
             }
 
             const prevRevealed = this.revealed;
@@ -298,9 +393,17 @@ class PointPoker {
     }
 
     leaveSession() {
-        if (this.sessionRef && this.playerId) {
-            this.sessionRef.child('players/' + this.playerId).remove();
-            this.sessionRef.off();
+        // Clean up the Firebase listener
+        if (this.unsubscribeSession) {
+            this.unsubscribeSession();
+            this.unsubscribeSession = null;
+        }
+
+        // Clear any pending grace period timeout
+        clearTimeout(this._gracePeriodTimeout);
+
+        if (this.db && this.sessionCode && this.playerId) {
+            remove(ref(this.db, `sessions/${this.sessionCode}/players/${this.playerId}`));
         }
 
         this.sessionCode = null;
@@ -396,7 +499,7 @@ class PointPoker {
         this.currentPlayer = name;
 
         if (this.isOnline && this.sessionRef) {
-            this.sessionRef.child('players/' + this.playerId).update({
+            update(ref(this.db, `sessions/${this.sessionCode}/players/${this.playerId}`), {
                 name: name
             });
         } else {
@@ -421,7 +524,7 @@ class PointPoker {
 
         if (this.currentPlayer) {
             if (this.isOnline && this.sessionRef) {
-                this.sessionRef.child('players/' + this.playerId).update({
+                update(ref(this.db, `sessions/${this.sessionCode}/players/${this.playerId}`), {
                     vote: value
                 });
             } else {
@@ -436,7 +539,7 @@ class PointPoker {
         }
     }
 
-    startVoting() {
+    async startVoting() {
         const ticketInput = document.getElementById('jiraTicket');
         const ticketNumber = ticketInput.value.trim();
 
@@ -456,14 +559,13 @@ class PointPoker {
                 revealed: false
             };
 
-            this.sessionRef.child('players').once('value').then((snapshot) => {
-                if (snapshot.exists()) {
-                    snapshot.forEach(child => {
-                        updates['players/' + child.key + '/vote'] = null;
-                    });
-                }
-                this.sessionRef.update(updates);
-            });
+            const playersSnapshot = await get(ref(this.db, `sessions/${this.sessionCode}/players`));
+            if (playersSnapshot.exists()) {
+                playersSnapshot.forEach(child => {
+                    updates[`players/${child.key}/vote`] = null;
+                });
+            }
+            await update(this.sessionRef, updates);
         } else {
             this.activeTicket = ticketNumber;
 
@@ -506,7 +608,7 @@ class PointPoker {
         }
 
         if (this.isOnline && this.sessionRef) {
-            this.sessionRef.update({ revealed: true });
+            update(this.sessionRef, { revealed: true });
         } else {
             this.revealed = true;
             this.renderPlayers();
@@ -525,21 +627,20 @@ class PointPoker {
         }
     }
 
-    reset() {
+    async reset() {
         if (this.isOnline && this.sessionRef) {
             const updates = {
                 ticket: null,
                 revealed: false
             };
 
-            this.sessionRef.child('players').once('value').then((snapshot) => {
-                if (snapshot.exists()) {
-                    snapshot.forEach(child => {
-                        updates['players/' + child.key + '/vote'] = null;
-                    });
-                }
-                this.sessionRef.update(updates);
-            });
+            const playersSnapshot = await get(ref(this.db, `sessions/${this.sessionCode}/players`));
+            if (playersSnapshot.exists()) {
+                playersSnapshot.forEach(child => {
+                    updates[`players/${child.key}/vote`] = null;
+                });
+            }
+            await update(this.sessionRef, updates);
         } else {
             this.revealed = false;
             this.players.forEach((player, key) => {
@@ -767,12 +868,6 @@ class PointPoker {
         });
     }
 
-    revealCards() {
-        this.revealed = true;
-        this.renderPlayers();
-        this.showResults();
-    }
-
     showResults() {
         const votes = Array.from(this.players.values())
             .map(p => p.vote)
@@ -817,4 +912,4 @@ class PointPoker {
 }
 
 // Initialize the app
-const app = new PointPoker();
+const pokerApp = new PointPoker();
