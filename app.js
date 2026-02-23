@@ -187,7 +187,24 @@ class PointPoker {
             localStorage.setItem('pointPokerPlayerId', this.playerId);
         } catch (error) {
             console.error("Anonymous authentication failed:", error);
-            alert("Failed to authenticate with Firebase. Please try again.");
+            let errorMessage = "Failed to authenticate with Firebase.\n\n";
+            
+            // Check for specific error codes and provide helpful guidance
+            if (error.code === 'auth/operation-not-allowed') {
+                errorMessage += "Anonymous authentication is not enabled.\n\n";
+                errorMessage += "To fix this:\n";
+                errorMessage += "1. Go to Firebase Console\n";
+                errorMessage += "2. Navigate to Authentication → Sign-in method\n";
+                errorMessage += "3. Enable Anonymous authentication\n";
+                errorMessage += "4. Save and try again";
+            } else if (error.code === 'auth/network-request-failed') {
+                errorMessage += "Network error. Please check your internet connection and try again.";
+            } else {
+                errorMessage += "Error: " + (error.message || "Unknown error") + "\n\n";
+                errorMessage += "Please check your Firebase configuration and try again.";
+            }
+            
+            alert(errorMessage);
             return;
         }
 
@@ -250,7 +267,24 @@ class PointPoker {
             localStorage.setItem('pointPokerPlayerId', this.playerId);
         } catch (error) {
             console.error("Anonymous authentication failed:", error);
-            alert("Failed to authenticate with Firebase. Please try again.");
+            let errorMessage = "Failed to authenticate with Firebase.\n\n";
+            
+            // Check for specific error codes and provide helpful guidance
+            if (error.code === 'auth/operation-not-allowed') {
+                errorMessage += "Anonymous authentication is not enabled.\n\n";
+                errorMessage += "To fix this:\n";
+                errorMessage += "1. Go to Firebase Console\n";
+                errorMessage += "2. Navigate to Authentication → Sign-in method\n";
+                errorMessage += "3. Enable Anonymous authentication\n";
+                errorMessage += "4. Save and try again";
+            } else if (error.code === 'auth/network-request-failed') {
+                errorMessage += "Network error. Please check your internet connection and try again.";
+            } else {
+                errorMessage += "Error: " + (error.message || "Unknown error") + "\n\n";
+                errorMessage += "Please check your Firebase configuration and try again.";
+            }
+            
+            alert(errorMessage);
             return;
         }
 

@@ -54,9 +54,11 @@ To enable multiplayer sessions, you need a free Firebase project:
 4. Click the web icon (`</>`) to add a web app
 5. Copy the `firebaseConfig` object from the setup screen
 6. Open `firebase-config.js` in this repository and replace the placeholder values with your config
-7. In the Firebase Console, go to **Realtime Database** → **Create Database**
-8. Choose a location and start in **test mode** (or set custom rules below)
-9. Set the database rules to:
+7. In the Firebase Console, go to **Authentication** → **Sign-in method**
+8. Click on **Anonymous** and click **Enable**, then **Save**
+9. Go to **Realtime Database** → **Create Database**
+10. Choose a location and start in **test mode** (or set custom rules below)
+11. Set the database rules to:
 
 ```json
 {
