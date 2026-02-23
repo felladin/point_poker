@@ -521,13 +521,20 @@ class PointPoker {
 
         if (this.currentPlayer) {
             if (this.isOnline && this.sessionRef) {
+                // Parse the value to an integer before sending it to Firebase
+                const numericValue = parseInt(value, 10);
+                if (isNaN(numericValue)) {
+                    console.error("Invalid vote value, not a number:", value);
+                    alert("Invalid vote value. Please select a valid number.");
+                    return;
+                }
                 update(ref(this.db, `sessions/${this.sessionCode}/players/${this.playerId}`), {
-                    vote: value
+                    vote: numericValue // Send the numeric value
                 });
             } else {
                 const player = this.players.get(this.playerId);
                 if (player) {
-                    player.vote = value;
+                    player.vote = value; // Keep this as string for local display if you wish, or convert here too
                     this.players.set(this.playerId, player);
                     this.renderPlayers();
                     this.saveCurrentSession();
