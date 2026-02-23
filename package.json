@@ -1,0 +1,14 @@
+{
+  "name": "point-poker",
+  "version": "1.0.0",
+  "description": "A simple, elegant planning poker app for agile teams to estimate story points collaboratively.",
+  "type": "module",
+  "scripts": {
+    "start": "serve ."
+  },
+  "devDependencies": {
+    "serve": "^14.2.5"
+  },
+  "keywords": ["planning-poker", "agile", "story-points"],
+  "license": "MIT"
+}

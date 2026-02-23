@@ -75,6 +75,10 @@ That's it! The app will automatically detect the Firebase configuration and enab
 
 ## 💻 Local Development
 
+> **Note:** This app uses ES modules, which require files to be served over HTTP.
+> Opening `index.html` directly (via `file://`) will cause an error like
+> *"Can't use import outside a module"*. Use a local server instead:
+
 ```bash
 # Clone the repository
 git clone https://github.com/felladin/point_poker.git
@@ -82,5 +86,8 @@ git clone https://github.com/felladin/point_poker.git
 # Navigate to the folder
 cd point_poker
 
-# Open in browser
-open index.html
+# Install dependencies (requires Node.js and npm)
+npm install
+
+# Start the local server
+npm start
