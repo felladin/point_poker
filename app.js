@@ -7,9 +7,9 @@ import {
     update,
     remove,
     get,
-    signInAnonymously,
-    onAuthStateChanged
+    signInAnonymously
 } from './firebase-config.js';
+import { onAuthStateChanged } from "firebase/auth";
 import { serverTimestamp, onValue } from "firebase/database";
 
 class PointPoker {
